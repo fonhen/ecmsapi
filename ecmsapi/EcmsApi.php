@@ -9,22 +9,22 @@ class EcmsApi
 
     }
 
-    public function get($name , $default = '' , $fn = 'trim'){
+    public function get($name , $default = '' , $fn = ''){
         $value = isset($_GET[$name]) ? $_GET[$name] : $default;
         return !empty($fn) && function_exists($fn) ? $fn($value) : $value;
     }
 
-    public function post($name , $default = '' , $fn = 'trim'){
+    public function post($name , $default = '' , $fn = ''){
         $value = isset($_POST[$name]) ? $_POST[$name] : $default;
         return !empty($fn) && function_exists($fn) ? $fn($value) : $value;
     }
 
-    public function param($name , $default = '' , $fn = 'trim'){
-        $value = isset($_GET[$name]) ? $_GET[$name] : (isset($_POST[$name]) ? $_POST[$name] : $default);
+    public function param($name , $default = '' , $fn = ''){
+        $value = isset($_REQUEST[$name]) ? $_REQUEST[$name] : $default;
         return !empty($fn) && function_exists($fn) ? $fn($value) : $value;
     }
 
-    public function input($name = '' , $default = '' , $fn = 'trim'){
+    public function input($name = '' , $default = '' , $fn = ''){
         $input = json_decode(file_get_contents('php://input') , true);
         $input = !empty($input) ? $input : array();
         if(empty($name)){
@@ -86,7 +86,23 @@ class EcmsApi
     {
         $className = 'Eapi'.ucfirst($name);
         if(!class_exists($className)){
-            require('./_class/'.$className.'.php');
+            require(ECMS_PATH . '/ecmsapi/_class/'.$className.'.php');
+        }
+        if(false === $cache){
+            return new $className($conf , $this);
+        }else{
+            if(!isset($this->classCache[$name])){
+                $this->classCache[$name] = new $className($conf , $this);
+            }
+            return $this->classCache[$name];
+        }
+    }
+    
+    public function extend($name = '' , $conf = [] , $cache = true)
+    {
+        $className = 'EapiExtend'.ucfirst($name);
+        if(!class_exists($className)){
+            require(ECMS_PATH . '/ecmsapi/_extend/'.$className.'.php');
         }
         if(false === $cache){
             return new $className($conf , $this);
@@ -119,9 +135,20 @@ class EcmsApi
         $json = $cb.'('.$json.');';
         $this->show($json , 'application/json');
     }
+    
+    public function location($url = '/' , $code = 0)
+    {
+        if($code >= 100){
+            $this->sendCode($code);
+        }
+        $url = trim($url);
+        $url = $url === '' ? '/' : $url;
+        header("Location: {$url}");
+        exit;
+    }
 
     public function sendCode($code) {
-        $status = array(
+        static $_status = array(
             100 => 'Continue',
             101 => 'Switching Protocols',
             200 => 'OK',
@@ -165,8 +192,8 @@ class EcmsApi
             509 => 'Bandwidth Limit Exceeded'
         );
         if(isset($_status[$code])) {
-            header('HTTP/1.1 '.$code.' '.$status[$code]);
-            header('Status:'.$code.' '.$status[$code]);
+            header('HTTP/1.1 '.$code.' '.$_status[$code]);
+            header('Status:'.$code.' '.$_status[$code]);
         }
     }
 }

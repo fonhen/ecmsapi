@@ -35,11 +35,11 @@ class EapiDb
 
     public function select($table , $field = '*' , $map = '0' , $pagination = '20,1' , $orderby = '')
     {
-        list($limit , $page) = explode(',' , $pagination.',1,1');
-        $limit = (int)$limit;
+        $temp = explode(',' , $pagination.',1,1');
+        $limit = (int)$temp[0];
         $limit = $limit > 0 ? $limit : 20;
         $limit = $limit > 2000 ? 2000 : $limit;
-        $page = (int)$page;
+        $page = (int)$temp[1];
         $page = $page > 1 ? $page : 1;
         $offset = ($page-1) * $limit;
         $orderby = $orderby ? 'order by '.$orderby : '';

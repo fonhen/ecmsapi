@@ -59,8 +59,6 @@ if($api->isPost()){
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>API管理</title>
 <link href="../adminstyle/<?=$loginadminstyleid?>/adminstyle.css" rel="stylesheet" type="text/css">
-<link rel="stylesheet" href="./codemirror/codemirror.min.css">
-<script src="./codemirror/codemirror.min.js"></script>
 </head>
 <body>
 <table width="100%" border="0" align="center" cellpadding="3" cellspacing="1">
@@ -102,11 +100,7 @@ if($api->isPost()){
   </tr>
 </table>
 </form>
-<script>
-var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
-    lineNumbers: true
-  });
-</script>
+<script type="text/javascript" src="https://cdn.staticfile.org/require.js/2.3.6/require.min.js" data-main="js/ace"></script>
 </body>
 </html>
 

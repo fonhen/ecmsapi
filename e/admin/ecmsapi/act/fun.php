@@ -31,8 +31,6 @@ if($api->isPost()){
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>接口管理</title>
 <link href="../adminstyle/<?=$loginadminstyleid?>/adminstyle.css" rel="stylesheet" type="text/css">
-<link rel="stylesheet" href="./codemirror/codemirror.min.css">
-<script src="./codemirror/codemirror.min.js"></script>
 </head>
 <body style="min-width:900px;">
 <table width="100%" border="0" align="center" cellpadding="3" cellspacing="1">
@@ -46,7 +44,7 @@ if($api->isPost()){
     <td height="25"><?=$title?></td>
   </tr>
 	<tr bgcolor="#FFFFFF">
-    <td><textarea name="code" id="code" style="width:100%; height:600px;"><?=htmlspecialchars($code)?></textarea></td>
+    <td><textarea name="code" id="code" data-autofocus="true" style="width:100%; height:600px;"><?=htmlspecialchars($code)?></textarea></td>
   </tr>
 	<tr bgcolor="#f4f4f4">
     <td height="25" align="center">
@@ -58,10 +56,6 @@ if($api->isPost()){
 	此功能需要有一定php基础,如果出错可能会引起相关api失效
 </div>
 </form>
-<script>
-var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
-    lineNumbers: true
-  });
-</script>
+<script type="text/javascript" src="https://cdn.staticfile.org/require.js/2.3.6/require.min.js" data-main="js/ace"></script>
 </body>
 </html>
