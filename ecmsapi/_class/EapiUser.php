@@ -98,6 +98,55 @@ class EapiUser
 
         return $uid;
     }
+    
+    // 更新
+    public function update($data , $uid = 0)
+    {
+        global $public_r,$ecms_config,$level_r;
+
+        $user = $this->one($uid , 'userid');
+        
+        if($user){
+            $map = 'userid = '.$user['userid'];
+        }else{
+            $this->error = '用户不存在';
+            return false;
+        }
+        
+        if(isset($data['userid'])){
+            unset($data['userid']);
+        }
+        
+        if(isset($data['password'])){
+            $data['salt'] = $this->getRand($ecms_config['member']['saltnum']);
+            $data['password'] = $this->createPassword($data['password'] , $data['salt']);
+        }
+
+        $mdata = $this->filterField('enewsmember' , $data); //主表数据
+        
+        if(!empty($mdata)){
+            $result = $this->api->load('db')->update('[!db.pre!]enewsmember' , $mdata , $map);
+        }else{
+            $result = true;
+        }
+
+        if(false === $result){
+            $this->error = '会员主表数据更新失败';
+            return false;
+        }
+
+        $sdata = $this->filterField('enewsmemberadd' , $data); //副表数据
+        
+        if(!empty($sdata)){
+            $result = $this->api->load('db')->update('[!db.pre!]enewsmemberadd' , $sdata , $map);
+            if(false === $result){
+                $this->error = '副表更新失败';
+            }
+            return $result;
+        }else{
+            return true;
+        }
+    }
 
     // 将会员设置成登陆状态
     public function setSession($user , $time = 0)
