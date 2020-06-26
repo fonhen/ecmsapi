@@ -279,6 +279,51 @@ class EapiTable
         return array_merge($zdata , $sdata);
         
     }
+    
+    // 设置审核状态
+    public function setChecked($table , $id , $checked = 1)
+    {
+        $checked = (int)$checked > 0 ? 1 : 0;
+        $tb = '[!db.pre!]ecms_'.$table;
+        $db = $this->api->load('db');
+        $data = $db->getByPk($tb.'_index' , $id , 'id,classid,checked');
+        
+        if(!$data){
+            $this->error = '没有获取到相关数据';
+            return false;
+        }
+        
+        if((int)$data['checked'] === $checked){
+            return true;
+        }
+       
+        if($checked === 1){
+            $form_tb = $tb.'_check'; // 主表
+            $form_data_tb = $tb.'_check_data'; // 副表
+            $d = $db->getByPk($tb.'_check' , $id , 'stb');
+            $to_tb = $tb; // 转入主表
+            $to_data_tb = $tb.'_data_'.$d['stb']; // 移入副表
+            $infos['infos'] = ['infos + 1']; // 审核 栏目统计+1
+        }else{
+            $d = $db->getByPk($tb , $id , 'stb');
+            $form_tb = $tb; // 主表
+            $form_data_tb = $tb.'_data_'.$d['stb']; // 副表
+            $to_tb = $tb.'_check'; // 转入主表
+            $to_data_tb = $to_tb.'_data'; // 转入副表
+            $infos['infos'] = ['infos - 1']; // 取消审核 栏目统计-1
+        }
+        $map = 'id = '.$id;
+        $db->query("insert into {$to_tb} select * from {$form_tb} where {$map}"); // 复制主表
+        $db->query("insert into {$to_data_tb} select * from {$form_data_tb} where {$map}"); // 复制副表
+        $db->delete($form_tb , $map);
+        $db->delete($form_data_tb , $map);
+        $db->update($tb.'_index' , ['checked' => $checked] , $map);
+        
+        // 刷列表除信息量
+        $db->update('[!db.pre!]enewsclass' , $infos , 'classid = '.$data['classid']);
+        
+        return true;
+    }
 
     protected function filterField($table , $data)
     {
