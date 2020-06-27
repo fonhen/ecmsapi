@@ -91,7 +91,7 @@ class EapiFun
         ] , $option);
     }
     
-    public function jsonp($code , $data , $message = '' , $option = 0)
+    public function jsonp($code , $data , $message = '' , $cb = 'callback', $option = 0)
     {
         if(is_string($data)){
             $message = $message === '' ? $data : $message;
@@ -103,7 +103,7 @@ class EapiFun
             'code' => $code,
             'data' => $data,
             'message' => $message
-        ] , $option);
+        ] , $cb , $option);
     }
     
     public function getError()
