@@ -4,7 +4,8 @@ class EapiUpload {
         "size"      =>       0,
         "mimes"     =>       [],
         "exts"      =>       [],
-        "rootpath"      =>   "upload"
+        "rootpath"      =>   "upload",
+        "http_user_agent" => ""
     ];
     private $api = null;
     private $error = null;
@@ -44,7 +45,61 @@ class EapiUpload {
     // 下载远程文件，保存到本地
     public function download($url , $filename = '' , $savepath = '')
     {
+        $ch = curl_init($url);
+        $user_agent = $this->config['http_user_agent'] != '' ? $this->config['http_user_agent'] : $_SERVER['HTTP_USER_AGENT'];
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+        if( strpos($url, 'https://') === 0 ){
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        }
+        $data = curl_exec($ch);
+        $mime = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+        $file = [];
+        $file['name'] = basename($url);
+        $file['ext'] = isset($this->config['mimes'][$mime]) ? $this->config['mimes'][$mime] : '';
+        if($file['ext'] === ''){
+            $this->error = '该文件类型不允许下载';
+            return false;
+        }
+        $file['size'] = (int)strlen($data);
+        if($this->config['size'] > 0 && $this->config['size'] < $file['size']){
+            $this->error = '下载文件大小不符';
+            return false;
+        }
         
+        // 开始保存文件
+        $filename = $filename === '' ? uniqid() : $filename;
+        $fullname = $file['ext'] !== '' ? $filename . '.' . $file['ext'] : $filename;
+        // 处理保存路径
+        $dir = rtrim($this->config['rootpath'] , '/') . '/' . trim($savepath , '/') . '/';
+        $filepath = $dir . $fullname;
+        
+        
+        if( !is_dir($dir) && !@mkdir($dir , 0777 , true) ){
+            $this->error = "保存目录创建失败";
+            return false;
+        }
+        
+        if( is_dir($dir) && !is_writable($dir) ){
+            $this->error = "保存目录没有写入权限";
+            return false;
+        }
+
+
+        if( !file_put_contents($filepath , $data) ){
+            $this->error = '保存远程文件错误！';
+            return false;
+        }
+        
+        $res = array(
+            'filename' => $filename,
+            'ext' => $file['ext'],
+            'fullname' => $fullname,
+            'original' => $file['name'],
+            'size' => $file['size']
+        );
+        return $res;
     }
 
     public function upload($file , $filename = '' , $savepath = ''){
@@ -133,7 +188,7 @@ class EapiUpload {
 
 
     public function checkMime($mime){
-        return empty($this->config['mimes']) ? true : in_array(strtolower($mime), $this->mimes);
+        return empty($this->config['mimes']) ? true : in_array(strtolower($mime), $this->mimes) || isset($this->mimes[strtolower($mime)]);
     }
 
     public function checkExt($ext){

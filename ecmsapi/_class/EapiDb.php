@@ -5,6 +5,7 @@ class EapiDb
     protected $dbtbpre = '';
     protected $api = null;
     protected $tableFieldsCache = [];
+    protected $errno = 0;
 
     public function __construct($conf = [] , $api = null)
     {
@@ -13,11 +14,30 @@ class EapiDb
         $this->dbtbpre = $dbtbpre;
         $this->api = $api;
     }
+    
+    public function startTrans()
+    {
+        $this->errno = 0;
+        $this->query('begin;');
+    }
+    
+    public function endTrans()
+    {
+        if( $this->errno > 0){
+            $this->query('rollback;');
+            $this->errno = 0;
+            return false;
+        }else{
+            $this->query('commit;');
+            return true;
+        }
+    }
 
     public function query($sql , $exit = false){
         $sql = $this->sql($sql);
         $obj = !$exit ? $this->empire->query1($sql) : $this->empire->query($sql);
         if(is_bool($obj)){
+            !$obj AND $this->errno++;
             return $obj;
         }
         $result = [];

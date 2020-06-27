@@ -82,6 +82,49 @@ class EapiFile
         return $fdata;
     }
     
+    /*
+    * 下载远程文件到本地
+    */
+    public function download($url , $id = 0 , $classid = 0 , $filepass = 0 , $type = 1 , $http_user_agent = '')
+    {
+        $url = trim($url);
+        $url = strpos($url , '//') === 0 ? 'http:'.$url : $url;
+        if( strpos($url, 'https://') !== 0 && strpos($url, 'http://') !== 0 ){
+            $this->error = '请输入正确的地址';
+            return false;
+        }
+        
+        $filepass = $filepass ? $filepass : time();
+        
+        $fpath = $this->getFpath($classid , $this->getOption('fpath'));
+        
+        $filename = $this->buildFileName($file['name'] , $classid);
+        
+        $up = $this->api->load('upload' , [
+            'rootpath' => $this->getOption('rootpath'),
+            'size' => $this->getOption('size'),
+            'mimes' => $this->getOption('mimes'),
+            'exts' => $this->getOption('exts'),
+            'http_user_agent' => $http_user_agent
+        ]);
+        
+        $fileinfo = $up->download($url , $filename , $fpath);
+        
+        if(false === $fileinfo){
+            $this->error = $up->getError();
+            return false;
+        }
+        $fileinfo['path'] = $this->getFileDatePath();
+        
+        $fdata = $this->insert($fileinfo , $id , $classid , $filepass , $type);
+        
+        if(false === $fdata){
+            return false;
+        }
+        
+        return $fdata;
+    }
+    
     // 写入数据表
     public function insert($file , $id , $classid , $filepass = 0 , $type = 1)
     {

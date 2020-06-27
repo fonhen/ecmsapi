@@ -155,12 +155,12 @@ class EapiTable
         
         if($isChecked){
             $odata = $db->getByPk('[!db.pre!]ecms_'.$tb , $id , 'stb');
-            $stb = $table.'_data_'.$odata['stb'];
+            $stb = $tb.'_data_'.$odata['stb'];
         }else{
-            $stb = $table.'_data';
+            $stb = $tb.'_data';
         }
         
-        $sdata = $data = $this->filterField($stb , array_merge($post , $data));
+        $sdata = $this->filterField($stb , array_merge($post , $data));
         
         if(!empty($sdata)){
             return $db->update('[!db.pre!]ecms_'.$stb , $sdata , 'id = '.$id);
