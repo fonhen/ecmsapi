@@ -76,6 +76,36 @@ class EapiFun
         return !!preg_match($rule , $code);
     }
     
+    public function json($code , $data , $message = '' , $option = 0)
+    {
+        if(is_string($data)){
+            $message = $message === '' ? $data : $message;
+            $data = [];
+        }else if(!is_array($data)){
+            $data = [];
+        }
+        return $this->api->json([
+            'code' => $code,
+            'data' => $data,
+            'message' => $message
+        ] , $option);
+    }
+    
+    public function jsonp($code , $data , $message = '' , $option = 0)
+    {
+        if(is_string($data)){
+            $message = $message === '' ? $data : $message;
+            $data = [];
+        }else if(!is_array($data)){
+            $data = [];
+        }
+        return $this->api->jsonp([
+            'code' => $code,
+            'data' => $data,
+            'message' => $message
+        ] , $option);
+    }
+    
     public function getError()
     {
         return $this->error;
