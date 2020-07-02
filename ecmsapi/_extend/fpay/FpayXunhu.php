@@ -52,8 +52,14 @@ class FpayXunhu
             'time' => time(),
             'notify_url' => $conf['notify'],
             'nonce_str' => time(),
+            'redirect' => 'Y'
         ];
-        $params['redirect'] = 'Y';
+        if(isset($conf['return_url'])){
+            $params['return_url'] = $conf['return_url'];
+        }
+        if(isset($conf['callback_url'])){
+            $params['callback_url'] = $conf['callback_url'];
+        }
         $params['hash'] = $this->createHash($params);
         $url = 'https://api.xunhupay.com/payment/do.html';
         
