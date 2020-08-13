@@ -106,6 +106,20 @@ class EapiFun
         ] , $cb , $option);
     }
     
+    public function getAttrs($text , $mode = true)
+    {
+        $text = $mode ? str_replace(array("\r\n", "\r", "\n"), "||||||", $text) : $text;
+        $temp = explode('||||||' , $text);
+        $result = [];
+        foreach($temp as $v){
+            $v = trim($v);
+            if($v !== ''){
+                $result[] = explode('::::::' , $v);
+            }
+        }
+        return $result;
+    }
+    
     public function getError()
     {
         return $this->error;
