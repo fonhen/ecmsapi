@@ -194,7 +194,7 @@ class EapiDb
         if(isset($this->tableFieldsCache[$table])){
             return $this->tableFieldsCache[$table];
         }else{
-            $fields = $this->api->load('db')->query("SHOW COLUMNS FROM `{$table}`");
+            $fields = $this->query("SHOW COLUMNS FROM `{$table}`");
             if(!empty($fields)){
                 return array_column($fields , null , 'Field');
             }else{
