@@ -171,7 +171,7 @@ function api_del_dir($dir = ''){
 				}
 			}
 			if(!readdir($dh)){
-				@rmdir($dir);	
+				@rmdir($dir);
 			}
 			@closedir($dh);	
 		}else{
