@@ -6,6 +6,8 @@ class EapiDb
     protected $api = null;
     protected $tableFieldsCache = [];
     protected $errno = 0;
+    protected $log = false;
+    protected $sqls = [];
 
     public function __construct($conf = [] , $api = null)
     {
@@ -203,8 +205,24 @@ class EapiDb
         }
     }
 
+    public function log($act = ''){
+        if($act === null){
+            $this->sqls = [];
+            return $this;
+        }else if($act === ''){
+            return $this->sqls;
+        }else{
+            $this->log = !!$act;
+            return $this;
+        }
+    }
+
     protected function sql($sql)
     {
-        return str_replace('[!db.pre!]'  , $this->dbtbpre , $sql);
+        $sql = str_replace('[!db.pre!]'  , $this->dbtbpre , $sql);
+        if(true === $this->log){
+            $this->sqls[] = $sql;
+        }
+        return $sql;
     }
 }
