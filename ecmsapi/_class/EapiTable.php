@@ -395,7 +395,7 @@ class EapiTable
         }
         $v['newspath'] = $d['newspath'];
         
-        $v['titleurl'] = '/'.$c['classpath'].'/'.$v['newspath'].'/'.$v['filename'].$c['classtype'];
+        $v['titleurl'] = '/'.$c['classpath'].'/'.$v['newspath'].'/'.$v['filename'].$c['filetype'];
         $v['titleurl'] = str_replace('//' , '/' , $v['titleurl']);
         
         $this->api->load('db')->update('[!db.pre!]ecms_'.$table , $v , 'id = '.$d['id']);
