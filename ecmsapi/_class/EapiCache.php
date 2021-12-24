@@ -29,6 +29,11 @@ class EapiCache
     {
         return $this->cache($this->type)->delete($name);
     }
+	
+	public function truncate()
+	{
+		return $this->cache($this->type)->truncate();
+	}
     
     public function cache($name , $conf = [] , $cache = true)
     {

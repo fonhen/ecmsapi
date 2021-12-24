@@ -56,8 +56,18 @@ class CacheFile {
         return unlink($this->filepath($name));
     }
     
-    public function truncate() {
-        
+    public function truncate(){
+		$dh=opendir($this->dir);
+		while ($file=readdir($dh)) {
+			if($file!="." && $file!="..") {
+				$filepath = $this->dir . "/" . $file;
+				if(!is_dir($filepath)) {
+					unlink($filepath);
+				}
+			}
+		}
+		closedir($dh);
+		return true;
     }
     
     public function getError(){
