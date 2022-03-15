@@ -15,7 +15,7 @@ class EapiExtendFpay
     public function load($name = '' , $conf = [] , $cache = true)
     {
         $className = 'Fpay'.ucfirst($name);
-        if(!class_exists($className)){
+        if(!class_exists($className , false)){
             require(ECMS_PATH . '/ecmsapi/_extend/fpay/'.$className.'.php');
         }
         if(false === $cache){

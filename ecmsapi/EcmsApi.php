@@ -97,7 +97,7 @@ class EcmsApi
     public function load($name = '' , $conf = [] , $cache = true)
     {
         $className = 'Eapi'.ucfirst($name);
-        if(!class_exists($className)){
+        if(!class_exists($className , false)){
             require(ECMS_PATH . '/ecmsapi/_class/'.$className.'.php');
         }
         if(false === $cache){
@@ -113,7 +113,7 @@ class EcmsApi
     public function extend($name = '' , $conf = [] , $cache = true)
     {
         $className = 'EapiExtend'.ucfirst($name);
-        if(!class_exists($className)){
+        if(!class_exists($className , false)){
             require(ECMS_PATH . '/ecmsapi/_extend/'.$className.'.php');
         }
         if(false === $cache){

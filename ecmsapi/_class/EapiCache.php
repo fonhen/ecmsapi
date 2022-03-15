@@ -39,7 +39,7 @@ class EapiCache
     {
         $this->type = $name;
         $className = 'Cache'.ucfirst($name);
-        if(!class_exists($className)){
+        if(!class_exists($className , false)){
             require( dirname(__FILE__) . '/cache/'.$className.'.php');
         }
         if(false === $cache){
