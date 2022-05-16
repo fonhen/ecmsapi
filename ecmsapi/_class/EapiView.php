@@ -52,7 +52,7 @@ class EapiView
     public function view($tempid = 0 , $cachetime = 0, $assign = []){
         $_view = [
             'id'        => $tempid,
-            'file'      => ECMS_PATH . 'e/data/tmp/dt_temp_apiview_'.$tempid.'.php',
+            'file'      => ECMS_PATH . 'e/data/tmp/dt_tempclasstemp'.$tempid.'.php',
             'cachetime' =>  (int)$cachetime
         ];
         $this->assign($assign);
@@ -62,14 +62,16 @@ class EapiView
         extract($this->assign);
         $api = $this->api; // 将api释放到模板
         // 缓存文件
-        if( $_view['cachetime'] && file_exists($_view['file']) && time() - $_view['cachetime'] <= filemtime($_view['file']) ){
-            ob_start();
-            include($_view['file']);
-            $string = ob_get_contents();
-            ob_end_clean();
-            $string = RepExeCode($string); //解析代码
-            $string = $this->replaceVars($string);
-            return $string;
+        if(file_exists($_view['file'])){
+            if($cachetime === 0 || $_view['cachetime'] <= filemtime($_view['file'])){
+                ob_start();
+                include($_view['file']);
+                $string = ob_get_contents();
+                ob_end_clean();
+                $string = RepExeCode($string); //解析代码
+                $string = $this->replaceVars($string);
+                return $string;
+            }
         }
         $text = $this->text($_view['id']);
 
@@ -90,5 +92,4 @@ class EapiView
         $string = $this->replaceVars($string);
         return $string;
     }
-
 }
