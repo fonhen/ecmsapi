@@ -63,7 +63,7 @@ class EapiView
         $api = $this->api; // 将api释放到模板
         // 缓存文件
         if(file_exists($_view['file'])){
-            if($cachetime === 0 || $_view['cachetime'] <= filemtime($_view['file'])){
+            if($_view['cachetime'] === 0 || $_view['cachetime'] <= filemtime($_view['file'])){
                 ob_start();
                 include($_view['file']);
                 $string = ob_get_contents();
