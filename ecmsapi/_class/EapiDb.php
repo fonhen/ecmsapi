@@ -8,6 +8,8 @@ class EapiDb
     protected $errno = 0;
     protected $log = false;
     protected $sqls = [];
+    public $medoo = null;
+    protected $error = '';
 
     public function __construct($conf = [] , $api = null)
     {
@@ -35,11 +37,24 @@ class EapiDb
         }
     }
 
-    public function query($sql , $exit = false){
+    public function query($sql , $exit = false , $toarray = false){
         $sql = $this->sql($sql);
+        // 兼容medoo
+        if($this->medoo){
+            $obj = $this->medoo->query($sql);
+            if($this->medoo->error){
+                $this->errno++;
+                $this->error = $this->medoo->error;
+                return false;
+            }
+            return $toarray ? $obj->fetchAll() : $obj;
+        }
         $obj = !$exit ? $this->empire->query1($sql) : $this->empire->query($sql);
         if(is_bool($obj)){
-            !$obj AND $this->errno++;
+            if(!$obj){
+                $this->errno++;
+                $this->error = $sql;
+            }
             return $obj;
         }
         $result = [];
@@ -66,8 +81,8 @@ class EapiDb
         $offset = ($page-1) * $limit;
         $orderby = $orderby ? 'order by '.$orderby : '';
         $field = trim($field) !== '' ? trim($field) : '*';
-        $sql = "select {$field} from {$table} where {$map} {$orderby} limit {$offset},{$limit};";
-        return $this->query($sql , false);
+        $sql = "select {$field} from `{$table}` where {$map} {$orderby} limit {$offset},{$limit};";
+        return $this->query($sql , false , true);
     }
 
     public function insert($table , $data = [])
@@ -78,15 +93,15 @@ class EapiDb
         $field = "";
         $value = "";
         foreach($data as $f=>$v){
-            $field .= "," . $f;
+            $field .= ",`" . $f . "`";
             $value .= ",'" . $v ."'";
         }
         $field = substr($field , 1);
         $value = substr($value , 1);
-        $sql = "insert into {$table} ({$field}) values ({$value});";
+        $sql = "insert into `{$table}` ({$field}) values ({$value});";
         $res = $this->query($sql , false);
-        if(true === $res){
-            return $this->empire->lastid();
+        if(false !== $res){
+            return $this->medoo ? $this->medoo->id() : $this->empire->lastid();
         }else{
             return false;
         }
@@ -107,7 +122,7 @@ class EapiDb
             $value = "";
             foreach($data as $f=>$v){
                 if($i === 0){
-                    $field .= "," . $f;
+                    $field .= ",`" . $f . "`";
                 }
                 $value .= ",'" . $v ."'";
             }
@@ -118,7 +133,7 @@ class EapiDb
         $values = substr($values , 1);
         $sql = "insert into {$table} ({$field}) values {$values};";
         $res = $this->query($sql , false);
-        if(true === $res){
+        if(false !== $res){
             return $num;
         }else{
             return false;
@@ -135,7 +150,7 @@ class EapiDb
             $setField = "";
             foreach($data as $f=>$v){
                 $v = !is_array($v) ? "'{$v}'" : $v[0]; 
-                $setField .= ",{$f}={$v}";
+                $setField .= ",`{$f}`={$v}";
             }
             $setField = substr($setField , 1);
         }
@@ -163,7 +178,7 @@ class EapiDb
             $orderby = $orderby !== '' ? 'order by '.$orderby : '';
             $sql = "select {$field} from {$table} where {$map} {$orderby} limit 0,1;";
         }
-        $datas = $this->query($sql , false);
+        $datas = $this->query($sql , false , true);
         if(empty($datas)){
             return false;
         }else{
@@ -183,7 +198,7 @@ class EapiDb
     public function total($table , $map = '')
     {
         if($map !== ''){
-            $sql = "select count(*) as total from {$table} where {$map};";
+            $sql = "select count(*) as total from `{$table}` where {$map};";
         }else{
             $sql = $table;
         }
@@ -196,7 +211,7 @@ class EapiDb
         if(isset($this->tableFieldsCache[$table])){
             return $this->tableFieldsCache[$table];
         }else{
-            $fields = $this->query("SHOW COLUMNS FROM `{$table}`");
+            $fields = $this->query("SHOW COLUMNS FROM `{$table}`" , false , true);
             if(!empty($fields)){
                 return array_column($fields , null , 'Field');
             }else{
@@ -224,5 +239,28 @@ class EapiDb
             $this->sqls[] = $sql;
         }
         return $sql;
+    }
+    
+    public function medoo()
+    {
+        global $ecms_config;
+        if(null === $this->medoo){
+            $conf = $ecms_config['db'];
+            $this->medoo = new Medoo\Medoo([
+                'type'     => 'mysql',
+                'host'     => $conf['dbserver'],
+                'database' => $conf['dbname'],
+                'username' => $conf['dbusername'],
+                'password' => $conf['dbpassword'],
+                'charset'  => $conf['dbchar'],
+                'error'    => PDO::ERRMODE_WARNING
+            ]);
+        }
+        return $this->medoo;
+    }
+    
+    public function getError()
+    {
+        return $this->error;
     }
 }

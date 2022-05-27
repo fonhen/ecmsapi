@@ -402,17 +402,7 @@ class EapiTable
     }
 
     protected function getFields($table){
-        
-        if(isset($this->tableFieldsCache[$table])){
-            return $this->tableFieldsCache[$table];
-        }else{
-            $fields = $this->api->load('db')->query("SHOW COLUMNS FROM `[!db.pre!]ecms_{$table}`");
-            if(!empty($fields)){
-                return array_column($fields , null , 'Field');
-            }else{
-                return [];
-            }
-        }
+        return $this->api->load('db')->getTableFields('[!db.pre!]ecms_'.$table);
     }
 
     public function getError()
