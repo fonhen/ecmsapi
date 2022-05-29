@@ -1,7 +1,7 @@
 <?php
 // 支持命名空间，自动加载
 spl_autoload_register(function($name){
-    $file = ECMS_PATH . 'ecmsapi/_src/' . $name . '.php';
+    $file = ECMS_PATH . 'ecmsapi/_src/' . str_replace('\\' , DIRECTORY_SEPARATOR , $name) . '.php';
     if(file_exists($file)){
         include($file);
     }
