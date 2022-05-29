@@ -8,8 +8,6 @@ class EapiDb
     protected $errno = 0;
     protected $log = false;
     protected $sqls = [];
-    public $medoo = null;
-    protected $error = '';
 
     public function __construct($conf = [] , $api = null)
     {
@@ -37,24 +35,11 @@ class EapiDb
         }
     }
 
-    public function query($sql , $exit = false , $toarray = false){
+    public function query($sql , $exit = false){
         $sql = $this->sql($sql);
-        // 兼容medoo
-        if($this->medoo){
-            $obj = $this->medoo->query($sql);
-            if($this->medoo->error){
-                $this->errno++;
-                $this->error = $this->medoo->error;
-                return false;
-            }
-            return $toarray ? $obj->fetchAll() : $obj;
-        }
         $obj = !$exit ? $this->empire->query1($sql) : $this->empire->query($sql);
         if(is_bool($obj)){
-            if(!$obj){
-                $this->errno++;
-                $this->error = $sql;
-            }
+            !$obj AND $this->errno++;
             return $obj;
         }
         $result = [];
@@ -82,7 +67,7 @@ class EapiDb
         $orderby = $orderby ? 'order by '.$orderby : '';
         $field = trim($field) !== '' ? trim($field) : '*';
         $sql = "select {$field} from `{$table}` where {$map} {$orderby} limit {$offset},{$limit};";
-        return $this->query($sql , false , true);
+        return $this->query($sql , false);
     }
 
     public function insert($table , $data = [])
@@ -100,8 +85,8 @@ class EapiDb
         $value = substr($value , 1);
         $sql = "insert into `{$table}` ({$field}) values ({$value});";
         $res = $this->query($sql , false);
-        if(false !== $res){
-            return $this->medoo ? $this->medoo->id() : $this->empire->lastid();
+        if(true === $res){
+            return $this->empire->lastid();
         }else{
             return false;
         }
@@ -131,9 +116,9 @@ class EapiDb
         }
         $field = substr($field , 1);
         $values = substr($values , 1);
-        $sql = "insert into {$table} ({$field}) values {$values};";
+        $sql = "insert into `{$table}` ({$field}) values {$values};";
         $res = $this->query($sql , false);
-        if(false !== $res){
+        if(true === $res){
             return $num;
         }else{
             return false;
@@ -150,7 +135,7 @@ class EapiDb
             $setField = "";
             foreach($data as $f=>$v){
                 $v = !is_array($v) ? "'{$v}'" : $v[0]; 
-                $setField .= ",`{$f}`={$v}";
+                $setField .= ",{$f}={$v}";
             }
             $setField = substr($setField , 1);
         }
@@ -176,9 +161,9 @@ class EapiDb
             $sql = $table;
         }else{
             $orderby = $orderby !== '' ? 'order by '.$orderby : '';
-            $sql = "select {$field} from {$table} where {$map} {$orderby} limit 0,1;";
+            $sql = "select {$field} from `{$table}` where {$map} {$orderby} limit 0,1;";
         }
-        $datas = $this->query($sql , false , true);
+        $datas = $this->query($sql , false);
         if(empty($datas)){
             return false;
         }else{
@@ -211,7 +196,7 @@ class EapiDb
         if(isset($this->tableFieldsCache[$table])){
             return $this->tableFieldsCache[$table];
         }else{
-            $fields = $this->query("SHOW COLUMNS FROM `{$table}`" , false , true);
+            $fields = $this->query("SHOW COLUMNS FROM `{$table}`");
             if(!empty($fields)){
                 return array_column($fields , null , 'Field');
             }else{
@@ -239,28 +224,5 @@ class EapiDb
             $this->sqls[] = $sql;
         }
         return $sql;
-    }
-    
-    public function medoo()
-    {
-        global $ecms_config;
-        if(null === $this->medoo){
-            $conf = $ecms_config['db'];
-            $this->medoo = new Medoo\Medoo([
-                'type'     => 'mysql',
-                'host'     => $conf['dbserver'],
-                'database' => $conf['dbname'],
-                'username' => $conf['dbusername'],
-                'password' => $conf['dbpassword'],
-                'charset'  => $conf['dbchar'],
-                'error'    => PDO::ERRMODE_WARNING
-            ]);
-        }
-        return $this->medoo;
-    }
-    
-    public function getError()
-    {
-        return $this->error;
     }
 }

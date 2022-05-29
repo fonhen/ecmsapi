@@ -402,7 +402,7 @@ class EapiTable
     }
 
     protected function getFields($table){
-        return $this->api->load('db')->getTableFields('[!db.pre!]ecms_'.$table);
+        return $this->api->load('db')->getTableFields("[!db.pre!]ecms_{$table}");
     }
 
     public function getError()
