@@ -283,7 +283,7 @@ class EapiUser
     {
         $uid = (int)$uid;
         $gid = (int)$gid;
-        return $userid ? $this->api->load('db')->update("[!db.pre!]enewsmember" , ['groupid' => $gid , 'userdate' => 0] , "userid=".$uid) : false;
+        return $uid ? $this->api->load('db')->update("[!db.pre!]enewsmember" , ['groupid' => $gid , 'userdate' => 0] , "userid=".$uid) : false;
     }
 
     // 获取指定用户用户名或ID的数据
