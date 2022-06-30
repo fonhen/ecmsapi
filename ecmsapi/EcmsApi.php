@@ -11,6 +11,7 @@ class EcmsApi
 {
 
     protected $classCache = [];
+    protected $varCache = [];
 
     public function __construct()
     {
@@ -214,6 +215,17 @@ class EcmsApi
         if(isset($_status[$code])) {
             header('HTTP/1.1 '.$code.' '.$_status[$code]);
             header('Status:'.$code.' '.$_status[$code]);
+        }
+    }
+    
+    public function composer($path = '')
+    {
+        if(!isset($this->varCache['composer'])){
+            $file = ECMS_PATH . $path . 'vendor/autoload.php';
+            if(file_exists($file)){
+                require($file);
+                $this->varCache['composer'] = true;
+            }
         }
     }
 }
