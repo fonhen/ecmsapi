@@ -34,8 +34,6 @@ spl_autoload_register(function($name){
     $file = ECMS_PATH . 'ecmsapi/_mod/' . ECMSAPI_MOD . '/_src/' . str_replace('\\' , DIRECTORY_SEPARATOR , $name) . '.php';
     if(file_exists($file)){
         include($file);
-    }else{
-        api_die('错误信息：' . $name . '类加载失败');
     }
 });
 
