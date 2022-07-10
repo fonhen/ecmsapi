@@ -76,9 +76,9 @@ class EcmsApi
         return isset($_SERVER['REQUEST_METHOD']) && strtoupper($_SERVER['REQUEST_METHOD'])==='TRACE';
     }
     
-    public function isOption()
+    public function isOptions()
     {
-        return isset($_SERVER['REQUEST_METHOD']) && strtoupper($_SERVER['REQUEST_METHOD'])==='OPTION';
+        return isset($_SERVER['REQUEST_METHOD']) && strtoupper($_SERVER['REQUEST_METHOD'])==='OPTIONS';
     }
     
     public function isAjax()
