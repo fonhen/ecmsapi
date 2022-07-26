@@ -22,7 +22,7 @@ if($api->isPost()){
 	if($post['a'] === ''){
 		printerror2('接口文件名不能为空');
 	}
-	if(!preg_match("/^[a-z0-9]+$/" , $post['a'])){
+	if(!preg_match("/^[a-z0-9\.]+$/" , $post['a'])){
 		printerror2('接口文件名只能由字母与数字组成');
 	}
 	if($post['a'] !== $a && isset($mData['list'][$post['a']])){
