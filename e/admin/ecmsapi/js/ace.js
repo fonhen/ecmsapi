@@ -5,7 +5,7 @@ require.config({
     }
 });
 
-require(['jquery' , 'ace/ace'] , function($ , ace){
+require(['jquery' , 'ace/ace' , 'ace/ext-language_tools' , 'ace/mode-php' , 'ace/snippets/php'] , function($ , ace){
     var $code = $('#code').hide();
     
     var $editor = $('<div/>').css({
@@ -13,16 +13,29 @@ require(['jquery' , 'ace/ace'] , function($ , ace){
         height: $code.height()
     }).insertAfter($code);
     
-    //console.log($code.val());
-    
     var editor = ace.edit($editor[0]);
     
     editor.setValue($code.val());
     editor.clearSelection();
     
-    ace.require(['ace/mode-php'] , function(){
+    setTimeout(function(){
         editor.session.setMode("ace/mode/php");
+        editor.setOptions({
+            enableBasicAutocompletion: true,
+            enableSnippets: true,
+            enableLiveAutocompletion: true
+        });
+    } , 100);
+    
+    editor.commands.addCommand({
+        name: 'save',
+        bindKey: {win: 'Ctrl-S',  mac: 'Command-S'},
+        exec: function(editor) {
+            $('form').submit();
+        },
+        readOnly: true
     });
+    
     
     if($code.data('autofocus')){
         editor.focus();
