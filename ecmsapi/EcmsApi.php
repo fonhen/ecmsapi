@@ -228,4 +228,15 @@ class EcmsApi
             }
         }
     }
+    
+    public function include($name , $mod = null){
+        if($mod){
+            $path = __DIR__ . '/_mod/' . $mod . '/' . $name . '.php';
+        }else{
+            $path = dirname(__DIR__) . '/' . $name . '.php';
+        }
+        if(is_file($path)){
+            include($path);
+        }
+    }
 }
