@@ -229,7 +229,7 @@ class EcmsApi
         }
     }
     
-    public function include($name , $mod = null){
+    public function import($name , $mod = null){
         if($mod){
             $path = __DIR__ . '/_mod/' . $mod . '/' . $name . '.php';
         }else{
