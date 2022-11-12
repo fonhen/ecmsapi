@@ -50,42 +50,33 @@ class EapiView
 
 
     public function view($tempid = 0 , $cachetime = 0, $assign = []){
-        $_view = [
-            'id'        => $tempid,
-            'file'      => ECMS_PATH . 'e/data/tmp/dt_tempclasstemp'.$tempid.'.php',
-            'cachetime' =>  (int)$cachetime
-        ];
+        global $link,$empire,$dbtbpre,$public_r,$public_diyr,$class_r,$class_tr,$class_zr,$level_r,$enews_r,$fun_r,$message_r,$qmessage_r,$ecms_config,$emod_r,$emod_pubr,$etable_r;
+        $_templateFile = ECMS_PATH . 'e/data/tmp/dt_tempclasstemp'.$tempid.'.php';
+        // 缓存文件
+        if(!file_exists($_templateFile)){
+            $text = $this->text($tempid);
+            $text=stripSlashes($text);
+            $text=ReplaceTempvar($text);//替换全局模板变量
+            //替换标签
+            $text=DoRepEcmsLoopBq($text);
+            $text=RepBq($text);
+            //写文件
+            WriteFiletext($_templateFile,AddCheckViewTempCode().$text);
+            unset($text);
+        }
+        // 兼容之前(包含cachetime)的参数写法
+        if(is_array($cachetime)){
+            $assign = $cachetime;
+        }
         $this->assign($assign);
         unset($tempid);
         unset($cachetime);
         unset($assign);
         extract($this->assign);
         $api = $this->api; // 将api释放到模板
-        // 缓存文件
-        if(file_exists($_view['file'])){
-            if($_view['cachetime'] === 0 || $_view['cachetime'] <= filemtime($_view['file'])){
-                ob_start();
-                include($_view['file']);
-                $string = ob_get_contents();
-                ob_end_clean();
-                $string = RepExeCode($string); //解析代码
-                $string = $this->replaceVars($string);
-                return $string;
-            }
-        }
-        $text = $this->text($_view['id']);
-
-        $text=stripSlashes($text);
-        $text=ReplaceTempvar($text);//替换全局模板变量
-        //替换标签
-        $text=DoRepEcmsLoopBq($text);
-        $text=RepBq($text);
-        //写文件
-        WriteFiletext($_view['file'],AddCheckViewTempCode().$text);
-        unset($text);
         //读取文件内容
         ob_start();
-        include($_view['file']);
+        include($_templateFile);
         $string = ob_get_contents();
         ob_end_clean();
         $string = RepExeCode($string);//解析代码
