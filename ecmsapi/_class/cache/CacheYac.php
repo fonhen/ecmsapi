@@ -4,9 +4,8 @@ class CacheYac {
     protected $cachepre = '';
     protected $error = null;
     public function __construct($conf = []) {
-        if(!class_exists('Yac')) {
-            $this->error = 'yac 扩展没有加载，请检查您的 PHP 版本';
-            return false;
+        if(!class_exists('Yac' , false)) {
+            exit('请先安装Yac扩展');
         }
         $this->cachepre = isset($conf['cachepre']) ? $conf['cachepre'] : 'ecmsapi_';
         $this->yac = new Yac($this->cachepre);
