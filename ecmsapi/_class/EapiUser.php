@@ -249,7 +249,7 @@ class EapiUser
     // 删除
     public function delete($uid)
     {
-        $db = $this->load('db');
+        $db = $this->api->load('db');
         $map = is_string($uid) ? 'username = "'.$uid.'"' : 'userid = '.(int)$uid;
         $user = $db->one('[!db.pre!]enewsmember' , 'userid' , $map);
         if(false === $user){
