@@ -239,4 +239,9 @@ class EcmsApi
             include($path);
         }
     }
+    
+    public function debug(){
+        ini_set("display_errors", "On");
+        ini_set("error_reporting", E_ALL);
+    }
 }
