@@ -3,10 +3,13 @@ define('EmpireCMSAdmin','1');
 require("../../class/connect.php");
 require("../../class/db_sql.php");
 require("../../class/functions.php");
-$apiFolder = 'ecmsapi/';
-$apiDir = ECMS_PATH . $apiFolder;
+require "../".LoadLang("pub/fun.php");
+require(ECMS_PATH . '/e/data/dbcache/class.php');
 $link=db_connect();
 $empire=new mysqlquery();
+
+require(ECMS_PATH.'ecmsapi/EcmsApi.php');
+
 $editor=2;
 //验证用户
 $lur=is_login();
@@ -19,39 +22,39 @@ $loginadminstyleid=$lur['adminstyleid'];
 $ecms_hashur=hReturnEcmsHashStrAll();
 $ecms_hashur['whehref'] = !isset($ecms_hashur['whehref']) || trim($ecms_hashur['whehref']) === '' ? '?_hash=' : $ecms_hashur['whehref'];
 
-require($apiDir.'EcmsApi.php');
-require('common.php');
-
-$apiConf = require($apiDir.'_common/conf.php');
-
-if(!is_file('install.lock')){
-	if(false === file_put_contents('./install.lock' , $loginlevel)){
-		exit('请检查'. __DIR__ .'目录权限');
-	}
-}else{
-	$apiLevel = file_get_contents('./install.lock');
-	if(empty($apiLevel)){
-		printerror2('未设置权限或读取不到' . __DIR__ . '/install.lock的内容');
-	}
-	$apiLevel = explode(',' , $apiLevel);
-	if(!in_array($loginlevel , $apiLevel)){
-		printerror2('权限不足');
-	}
-}
-
 $api = new EcmsApi();
 
-$act = strtolower($api->get('act'));
+$addonName = $api->get('addons' , '' , 'trim');
 
-$act = in_array($act , ['index' , 'list' , 'edit' , 'del' , 'mod' , 'fun' , 'conf' , 'level']) ? $act : 'index';
+// 当前插件的控制器文件
+$act = $api->get('act' , 'index' , 'trim');
 
-$allMod = api_get_all_mod();
+// 插件当前链接
+$addonLink = 'index.php' . $ecms_hashur['whehref'] . '&addons=' . $addonName;
 
-require('./act/'.$act.'.php');
+try{
+    // 获取当前插件对象
+    $addonClass = $api->load('addons' , $addonName , false);
+}catch(Exception $e){
+    printerror2($e->getMessage());
+}
 
+$addonFolder = $addonClass->getAdminFolder();
+$addonFolderLink = $addonClass->getAdminFolderLink();
 
+$commonFile = $addonFolder . 'common.php';
+if(is_file($commonFile)){
+    include $commonFile;
+}
 
+$filepath = $addonFolder . '/act/'.$act.'.php';
 
+if(is_file($filepath)){
+    include($filepath);
+}else{
+    printerror2('参数错误');
+}
 
-
-
+db_close();
+$empire=null;
+?>
